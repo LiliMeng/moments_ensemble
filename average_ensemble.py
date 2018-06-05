@@ -81,8 +81,9 @@ def load_resnet50_logits(logits_path, label_dict):
 
 def load_TRN_logits(label_dict):
 
-	logits_path = "/home/lili/Video/TRN-pytorch/moments_validation_logits.npy"
-	labels_path = "/home/lili/Video/TRN-pytorch/moments_validataion_names.npy"
+	logits_path = "./data/TRN/TRN_moments_validation_logits.npy"
+	labels_path = "./data/TRN/TRN_moments_validataion_names.npy"
+
 	logits = np.load(logits_path)
 	str_labels  = np.load(labels_path)
 
@@ -102,10 +103,30 @@ def load_TRN_logits(label_dict):
 
 	return logits, labels, str_labels
 
+def load_att_LSTM_logits(label_dict):
+
+	logits_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_logits_0.npy"
+	labels_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_labels_0.npy"
+	name_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_0.npy"
+
+	all_logits = np.load(logits_path)
+	all_labels = np.load(labels_path)
+	all_names  = np.load(name_path)
+
+	sorted_index = np.argsort(all_names)
+
+	all_logits = [all_logits[i] for i in sorted_index]
+	all_labels = [all_labels[i] for i in sorted_index]
+	all_names = [all_names[i] for i in sorted_index]
+
+	return all_logits, all_labels, all_names
+
+
 def load_audio_logits(correct_dict):
-	logits_path = "/home/lili/Video/moments_ensemble/audio_converted_logits.npy"
-	labels_path = "/home/lili/Video/moments_ensemble/audio_converted_labels.npy"
-	name_path = "/home/lili/Video/moments_ensemble/audio_converted_paths.npy"
+
+	logits_path = "./data/audio/audio_converted_logits.npy"
+	labels_path = "./data/audio/audio_converted_labels.npy"
+	name_path = "./data/audio/audio_converted_paths.npy"
 	
 	all_logits = np.load(logits_path)
 
@@ -146,6 +167,8 @@ def main():
 
 	TRN_logits, TRN_labels, TRN_names = load_TRN_logits(label_dict)
 
+	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits(label_dict)
+
 	audio_logits, audio_labels, audio_names = load_audio_logits(label_dict)
 
 	top1 = AverageMeter()
@@ -154,6 +177,7 @@ def main():
 	total_num = 33900
 
 	for i in range(total_num):
+
 		assert(resnet_labels[i]==TRN_labels[i]==audio_labels[i])
 		Resnet_per_video_logits_resnet = np.expand_dims(np.mean(resnet_logits[i],axis=0), axis=0)
 		
@@ -161,9 +185,13 @@ def main():
 
 		per_audio_logits = audio_logits[i]
 
-		per_video_logits = 1/3*(TRN_per_video_logits+Resnet_per_video_logits_resnet+per_audio_logits)
+		per_att_LSTM_logits = att_LSTM_logits[i]
+
+		per_video_logits = per_att_LSTM_logits
+
+		#per_video_logits = 1/3*(TRN_per_video_logits+Resnet_per_video_logits_resnet+per_audio_logits)
 	
-		per_video_label = np.expand_dims(audio_labels[i], axis=0)
+		per_video_label = np.expand_dims(att_LSTM_labels[i], axis=0)
 		per_video_logits = torch.from_numpy(per_video_logits)
 		per_video_label  = torch.from_numpy(per_video_label)
 
