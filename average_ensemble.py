@@ -212,6 +212,4 @@ def main():
                                                                   total_num ,
                                                                   float(cnt_time) / (i+1), top1.avg, top5.avg))
 
-		# if i==100:
-		# 	raise Exception("correct")
 main()
