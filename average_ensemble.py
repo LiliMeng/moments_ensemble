@@ -179,8 +179,6 @@ def main():
 
 	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits()
 
-	att_LSTM_logits2, att_LSTM_labels2, att_LSTM_names2 = load_att_LSTM_logits2()
-
 	audio_logits, audio_labels, audio_names = load_audio_logits()
 
 	top1 = AverageMeter()
