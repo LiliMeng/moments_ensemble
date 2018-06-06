@@ -9,6 +9,8 @@ import os
 import time
 import torch
 import fnmatch
+import importlib
+
 
 def get_class(fn):
     return fn.split('_')[0]
@@ -101,28 +103,35 @@ def load_TRN_logits(label_dict):
 	labels = [labels[i] for i in sorted_index]
 	str_labels = [str_labels[i] for i in sorted_index]
 
+	print("all_names in TRN: ", len(str_labels))
 	return logits, labels, str_labels
 
-def load_att_LSTM_logits(label_dict):
+def load_att_LSTM_logits():
 
-	logits_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_logits_0.npy"
-	labels_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_labels_0.npy"
-	name_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_0.npy"
+	logits_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_logits_6.npy"
+	labels_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_labels_6.npy"
+	name_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_6.npy"
 
 	all_logits = np.load(logits_path)
+
 	all_labels = np.load(labels_path)
+	
 	all_names  = np.load(name_path)
+	
+	all_names = np.concatenate(all_names, axis=0)
+	all_names = [all_names[i].decode("utf-8") for i in range(len(all_names))]
 
 	sorted_index = np.argsort(all_names)
 
 	all_logits = [all_logits[i] for i in sorted_index]
 	all_labels = [all_labels[i] for i in sorted_index]
 	all_names = [all_names[i] for i in sorted_index]
-
+		
+	print("Attention LSTM logits and labels are loaded")
+	
 	return all_logits, all_labels, all_names
 
-
-def load_audio_logits(correct_dict):
+def load_audio_logits():
 
 	logits_path = "./data/audio/audio_converted_logits.npy"
 	labels_path = "./data/audio/audio_converted_labels.npy"
@@ -140,6 +149,7 @@ def load_audio_logits(correct_dict):
 	all_labels = [all_labels[i] for i in sorted_index]
 	all_names = [all_names[i] for i in sorted_index]
 
+	print("Audio logits and labels are loaded")
 	return all_logits, all_labels, all_names
 
 def get_label_dict(label_list):
@@ -167,9 +177,11 @@ def main():
 
 	TRN_logits, TRN_labels, TRN_names = load_TRN_logits(label_dict)
 
-	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits(label_dict)
+	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits()
 
-	audio_logits, audio_labels, audio_names = load_audio_logits(label_dict)
+	att_LSTM_logits2, att_LSTM_labels2, att_LSTM_names2 = load_att_LSTM_logits2()
+
+	audio_logits, audio_labels, audio_names = load_audio_logits()
 
 	top1 = AverageMeter()
 	top5 = AverageMeter()
@@ -178,20 +190,18 @@ def main():
 
 	for i in range(total_num):
 
-		assert(resnet_labels[i]==TRN_labels[i]==audio_labels[i])
+		assert(resnet_labels[i]==TRN_labels[i]==audio_labels[i]==att_LSTM_labels[i])
 		Resnet_per_video_logits_resnet = np.expand_dims(np.mean(resnet_logits[i],axis=0), axis=0)
 		
 		TRN_per_video_logits = TRN_logits[i]
 
 		per_audio_logits = audio_logits[i]
 
-		per_att_LSTM_logits = att_LSTM_logits[i]
+		per_att_LSTM_logits = np.expand_dims(att_LSTM_logits[i], axis=0)
 
-		per_video_logits = per_att_LSTM_logits
+		per_video_logits = 1/4*(per_att_LSTM_logits+TRN_per_video_logits + Resnet_per_video_logits_resnet+per_audio_logits)
 
-		#per_video_logits = 1/3*(TRN_per_video_logits+Resnet_per_video_logits_resnet+per_audio_logits)
-	
-		per_video_label = np.expand_dims(att_LSTM_labels[i], axis=0)
+		per_video_label = np.expand_dims(resnet_labels[i], axis=0)
 		per_video_logits = torch.from_numpy(per_video_logits)
 		per_video_label  = torch.from_numpy(per_video_label)
 
@@ -204,6 +214,6 @@ def main():
                                                                   total_num ,
                                                                   float(cnt_time) / (i+1), top1.avg, top5.avg))
 
-
-
+		# if i==100:
+		# 	raise Exception("correct")
 main()
