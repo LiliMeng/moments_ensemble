@@ -197,7 +197,7 @@ def main():
 
 		per_att_LSTM_logits = np.expand_dims(att_LSTM_logits[i], axis=0)
 
-		per_video_logits = 1/4*(per_att_LSTM_logits+TRN_per_video_logits + Resnet_per_video_logits_resnet+per_audio_logits)
+		per_video_logits = 1/4*(per_att_LSTM_logits + TRN_per_video_logits + Resnet_per_video_logits_resnet + per_audio_logits)
 
 		per_video_label = np.expand_dims(resnet_labels[i], axis=0)
 		per_video_logits = torch.from_numpy(per_video_logits)
