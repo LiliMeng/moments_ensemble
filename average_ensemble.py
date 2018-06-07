@@ -10,6 +10,7 @@ import time
 import torch
 import fnmatch
 import importlib
+from sklearn.metrics import confusion_matrix
 
 
 def get_class(fn):
@@ -38,6 +39,7 @@ def accuracy(logits, target, topk=(1,)):
     batch_size = 1
     _, pred = logits.topk(maxk, 1, True, True)
     pred = pred.t()
+
 
     correct = pred.eq(target.view(1, -1).expand_as(pred))
 
@@ -186,6 +188,8 @@ def main():
 
 	total_num = 33900
 
+	pred_label_list = []
+	gt_label_list = []
 	for i in range(total_num):
 
 		assert(resnet_labels[i]==TRN_labels[i]==audio_labels[i]==att_LSTM_labels[i])
@@ -193,17 +197,29 @@ def main():
 		
 		TRN_per_video_logits = TRN_logits[i]
 
-		per_audio_logits = audio_logits[i]
+		per_audio_logits = np.expand_dims(audio_logits[i], axis=0)
 
 		per_att_LSTM_logits = np.expand_dims(att_LSTM_logits[i], axis=0)
 
 		per_video_logits = 1/4*(per_att_LSTM_logits + TRN_per_video_logits + Resnet_per_video_logits_resnet + per_audio_logits)
 
+		#per_video_logits = 1/3*( TRN_per_video_logits + Resnet_per_video_logits_resnet + per_audio_logits)
+		#per_video_logits = per_audio_logits
 		per_video_label = np.expand_dims(resnet_labels[i], axis=0)
 		per_video_logits = torch.from_numpy(per_video_logits)
 		per_video_label  = torch.from_numpy(per_video_label)
 
 		prec1, prec5 = accuracy(per_video_logits, per_video_label, topk=(1, 5))
+
+		maxk = max((1, 5))
+		_, pred = per_video_logits.topk(maxk, 1, True, True)
+		pred = pred.t()
+		pred_label = pred[0]
+
+		print("pred_label: ", pred_label.cpu().numpy()[0])
+		print("per_video_label: ", per_video_label.cpu().numpy()[0])
+		pred_label_list.append(pred_label.cpu().numpy()[0])
+		gt_label_list.append(per_video_label.cpu().numpy()[0])
 		top1.update(prec1[0], 1)
 		top5.update(prec5[0], 1)
 
@@ -211,5 +227,7 @@ def main():
 		print('video {} done, total {}/{}, average {:.3f} sec/video, moving Prec@1 {:.3f} Prec@5 {:.3f}'.format(i, i+1,
                                                                   total_num ,
                                                                   float(cnt_time) / (i+1), top1.avg, top5.avg))
-
+	
+	np.save("audio_valid_pred_label.npy", np.asarray(pred_label_list))
+	np.save("audio_valid_gt_label.npy", np.asarray(gt_label_list))
 main()
