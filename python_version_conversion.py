@@ -22,9 +22,9 @@ hash_lili_r = dict((value, clean_key(key)) for (value, key) in enumerate(lines))
 moumita2lili = dict((hash_table[key], hash_lili[key]) for key in hash_table)
 
 # Get the attn labels
-labels = np.load('/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_labels_8.npy').reshape(-1)
-logits = np.load('/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_logits_8.npy').reshape(-1, 339)
-names = np.load('/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_8.npy').reshape(-1)
+labels = np.load('/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_labels_3.npy').reshape(-1)
+logits = np.load('/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_logits_3.npy').reshape(-1, 339)
+names = np.load('/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_3.npy').reshape(-1)
 assert labels.shape == names.shape
 
 sorted_logits = np.zeros_like(logits)
@@ -42,5 +42,5 @@ true_labels = [hash_lili[n.split('/')[0]] for n in names]
 assert conv_labels == true_labels
 
 #np.save('/home/lili/Video/moments_ensemble/data/attention_LSTM/moumita2lili.npy', moumita2lili)
-np.save('/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_logits_8.npy', sorted_logits)
-np.save('/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_labels_8.npy', conv_labels)
+np.save('/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_logits_3.npy', sorted_logits)
+np.save('/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_labels_3.npy', conv_labels)

@@ -134,32 +134,6 @@ def load_att_LSTM_logits():
 	return all_logits, all_labels, all_names
 
 
-def load_att_LSTM_logits1():
-
-	logits_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_logits_3.npy"
-	labels_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_labels_3.npy"
-	
-	name_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_3.npy"
-
-	all_logits = np.load(logits_path)
-
-	all_labels = np.load(labels_path)
-	
-	all_names  = np.load(name_path)
-	
-	all_names = np.concatenate(all_names, axis=0)
-	all_names = [all_names[i].decode("utf-8") for i in range(len(all_names))]
-
-	sorted_index = np.argsort(all_names)
-
-	all_logits = [all_logits[i] for i in sorted_index]
-	all_labels = [all_labels[i] for i in sorted_index]
-	all_names = [all_names[i] for i in sorted_index]
-		
-	print("Attention LSTM logits and labels are loaded")
-	
-	return all_logits, all_labels, all_names
-
 def load_audio_logits():
 
 	logits_path = "./data/audio/audio_converted_logits.npy"
@@ -211,9 +185,9 @@ def main():
 
 	TRN_logits, TRN_labels, TRN_names = load_TRN_logits(label_dict)
 
-	#att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits()
+	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits()
 
-	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits1()
+	att_LSTM_logits1, att_LSTM_labels1, att_LSTM_names1 = load_att_LSTM_logits1()
 
 	audio_logits, audio_labels, audio_names = load_audio_logits()
 
