@@ -171,7 +171,12 @@ def get_label_dict(label_list):
 
 def main():
 
+
 	proc_start_time = time.time()
+
+	invalid_audio_classes = np.load("audio_invalid_categories.npy")
+
+	print(invalid_audio_classes)
 
 	label_dict = get_label_dict("/home/lili/Video/TRN-pytorch/pretrain/moments_categories.txt")
 	
@@ -182,6 +187,8 @@ def main():
 	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits()
 
 	audio_logits, audio_labels, audio_names = load_audio_logits()
+
+
 
 	top1 = AverageMeter()
 	top5 = AverageMeter()
@@ -202,22 +209,13 @@ def main():
 		per_att_LSTM_logits = np.expand_dims(att_LSTM_logits[i], axis=0)
 
 		per_video_logits = 1/4*(per_att_LSTM_logits + TRN_per_video_logits + Resnet_per_video_logits_resnet + per_audio_logits)
-
-		#per_video_logits = 1/3*( TRN_per_video_logits + Resnet_per_video_logits_resnet + per_audio_logits)
-		#per_video_logits = per_audio_logits
+		
 		per_video_label = np.expand_dims(resnet_labels[i], axis=0)
 		per_video_logits = torch.from_numpy(per_video_logits)
 		per_video_label  = torch.from_numpy(per_video_label)
 
 		prec1, prec5 = accuracy(per_video_logits, per_video_label, topk=(1, 5))
 
-		maxk = max((1, 5))
-		_, pred = per_video_logits.topk(maxk, 1, True, True)
-		pred = pred.t()
-		pred_label = pred[0]
-
-		print("pred_label: ", pred_label.cpu().numpy()[0])
-		print("per_video_label: ", per_video_label.cpu().numpy()[0])
 		pred_label_list.append(pred_label.cpu().numpy()[0])
 		gt_label_list.append(per_video_label.cpu().numpy()[0])
 		top1.update(prec1[0], 1)
@@ -228,6 +226,6 @@ def main():
                                                                   total_num ,
                                                                   float(cnt_time) / (i+1), top1.avg, top5.avg))
 	
-	np.save("audio_valid_pred_label.npy", np.asarray(pred_label_list))
-	np.save("audio_valid_gt_label.npy", np.asarray(gt_label_list))
+	# np.save("resnet_valid_pred_label.npy", np.asarray(pred_label_list))
+	# np.save("resnet_valid_gt_label.npy", np.asarray(gt_label_list))
 main()

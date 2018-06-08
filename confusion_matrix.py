@@ -49,12 +49,13 @@ def match_number_and_real_classname(sorted_diagonal_cm, match_list_file):
 	audio_invalid_list = []
 	for i in range(len(sorted_diagonal_cm)):
 		sorted_class_name=real_class_name_dict[sorted_diagonal_cm[i][0]]
-		with open('audio_valid_sorted_classes.txt', 'a') as f_sort:
-			print(sorted_diagonal_cm[i][0], sorted_class_name, sorted_diagonal_cm[i][1], file=f_sort)
 		if sorted_diagonal_cm[i][1]==0:
 			audio_invalid_list.append(sorted_diagonal_cm[i][0])
+		with open('audio_valid_sorted_classes.txt', 'a') as f_sort:
+			print(sorted_diagonal_cm[i][0], sorted_class_name, sorted_diagonal_cm[i][1], file=f_sort)
+		
 
-	np.save("resnet_invalid_categories.npy", np.asarray(audio_invalid_list))
+	np.save("audio_invalid_categories.npy", np.asarray(audio_invalid_list))
 
 
 def main():
