@@ -110,9 +110,9 @@ def load_TRN_logits(label_dict):
 
 def load_att_LSTM_logits():
 
-	logits_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_logits_6.npy"
-	labels_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_labels_6.npy"
-	name_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_6.npy"
+	logits_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_logits_13.npy"
+	labels_path = "/home/lili/Video/moments_ensemble/data/attention_LSTM/attn_labels_13.npy"
+	name_path = "/home/lili/Video/spatial_temporal_LSTM/att_result/att_all_valid_names_13.npy"
 
 	all_logits = np.load(logits_path)
 
@@ -172,7 +172,6 @@ def get_label_dict(label_list):
 
 def main():
 
-
 	proc_start_time = time.time()
 
 	invalid_audio_classes = np.load("audio_invalid_categories.npy")
@@ -187,11 +186,7 @@ def main():
 
 	att_LSTM_logits, att_LSTM_labels, att_LSTM_names = load_att_LSTM_logits()
 
-	att_LSTM_logits1, att_LSTM_labels1, att_LSTM_names1 = load_att_LSTM_logits1()
-
 	audio_logits, audio_labels, audio_names = load_audio_logits()
-
-
 
 	top1 = AverageMeter()
 	top5 = AverageMeter()
@@ -218,7 +213,6 @@ def main():
 		per_video_label  = torch.from_numpy(per_video_label)
 
 		prec1, prec5 = accuracy(per_video_logits, per_video_label, topk=(1, 5))
-
 	
 		top1.update(prec1[0], 1)
 		top5.update(prec5[0], 1)
